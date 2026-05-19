@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora Genética Veterinária</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="brand">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+          <path d="M9 3 Q15 7.5 9 12 Q3 16.5 9 21 Q15 25.5 9 30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M21 3 Q15 7.5 21 12 Q27 16.5 21 21 Q15 25.5 21 30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <line x1="9" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="9" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+          <line x1="9" y1="21" x2="21" y2="21" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-name">Genética Vet</span>
+          <span class="brand-sub">Calculadora</span>
+        </div>
+      </a>
+      <nav class="header-nav" id="headerNav">
+        <a href="#endogamia" class="nav-link" onclick="closeMenu()">Endogamia</a>
+        <a href="#hardy" class="nav-link" onclick="closeMenu()">Hardy-Weinberg</a>
+        <a href="#ne" class="nav-link" onclick="closeMenu()">Tam. Efetivo</a>
+        <a href="#hetero" class="nav-link" onclick="closeMenu()">Heterozigosidade</a>
+      </nav>
+      <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">Ferramentas educativas</p>
+      <h1 class="hero-title">Cálculos Genéticos <em>Veterinários</em></h1>
+      <p class="hero-desc">Quatro calculadoras para análise genética de populações animais. Cada resultado acompanhado de etapas detalhadas do processo de cálculo.</p>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===================== SECTION 01: ENDOGAMIA ===================== -->
+    <section class="calc-section" id="endogamia">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">01</span>
+        <h2 class="section-title">Endogamia <em>e</em> Parentesco</h2>
+        <p class="section-desc">Coeficientes de endogamia (F) e parentesco (R) por relação predefinida, valores customizados ou método de Wright.</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="form-group">
+          <label class="form-label" for="rel-select">Relação entre os indivíduos</label>
+          <div class="select-wrap">
+            <select id="rel-select" class="form-select" onchange="onRelChange()">
+              <option value="parent_child">Pai-Filho</option>
+              <option value="full_siblings">Irmãos completos</option>
+              <option value="half_siblings">Meio-irmãos</option>
+              <option value="first_cousins">Primos de 1º grau</option>
+              <option value="unrelated">Não aparentados</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+          <span class="form-hint" id="rel-hint">φ padrão: 0.25</span>
+        </div>
+
+        <div class="form-row" id="custom-fields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label" for="custom-phi">φ customizado <span class="optional">(kinship)</span></label>
+            <input type="number" id="custom-phi" class="form-input" placeholder="ex: 0.0625" step="any" min="0">
+            <span class="form-hint">coeficiente de parentesco</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="custom-R">R customizado</label>
+            <input type="number" id="custom-R" class="form-input" placeholder="ex: 0.125" step="any" min="0">
+            <span class="form-hint">coeficiente de relação = 2φ</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" id="use-wright" onchange="toggleWright()">
+            <span class="toggle-track"></span>
+            <span>Usar método de Wright (ancestral comum)</span>
+          </label>
+        </div>
+
+        <div id="wright-inputs" class="wright-section" hidden>
+          <div class="formula-display">R = k · (½)<sup>g₁+g₂</sup> · (1 + F<sub>anc</sub>)</div>
+          <div class="form-row three-col">
+            <div class="form-group">
+              <label class="form-label" for="wright-g1">g₁</label>
+              <input type="number" id="wright-g1" class="form-input" value="1" min="1" step="1">
+              <span class="form-hint">gerações do indiv. A ao ancestral</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="wright-g2">g₂</label>
+              <input type="number" id="wright-g2" class="form-input" value="1" min="1" step="1">
+              <span class="form-hint">gerações do indiv. B ao ancestral</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="wright-k">k</label>
+              <input type="number" id="wright-k" class="form-input" value="1" min="1" step="1">
+              <span class="form-hint">número de ancestrais comuns</span>
+            </div>
+          </div>
+          <div class="form-group" style="max-width: 220px;">
+            <label class="form-label" for="wright-fanc">F do ancestral</label>
+            <input type="number" id="wright-fanc" class="form-input" value="0" step="any" min="0">
+            <span class="form-hint">padrão: 0 (não consanguíneo)</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-calc" onclick="runEndogamia()">Calcular</button>
+          <button class="btn-clear" onclick="clearResult('endogamia')">Limpar</button>
+        </div>
+
+        <div class="result-panel" id="result-endogamia" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== SECTION 02: HARDY-WEINBERG ===================== -->
+    <section class="calc-section" id="hardy">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">02</span>
+        <h2 class="section-title">Hardy<span class="ndash">–</span>Weinberg</h2>
+        <p class="section-desc">Frequências genotípicas esperadas em equilíbrio de Hardy-Weinberg, dada a frequência alélica <em>p</em>.</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="formula-display mb">p² + 2pq + q² = 1</div>
+        <div class="form-group" style="max-width: 280px;">
+          <label class="form-label" for="hw-p">Frequência do alelo A (<em>p</em>)</label>
+          <input type="number" id="hw-p" class="form-input" value="0.5" step="0.01" min="0" max="1" oninput="previewHW()">
+          <span class="form-hint">q = 1 − p = <span id="hw-q-preview">0.5</span> &nbsp;·&nbsp; Intervalo: [0, 1]</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-calc" onclick="runHardy()">Calcular HW</button>
+          <button class="btn-clear" onclick="clearResult('hardy')">Limpar</button>
+        </div>
+        <div class="result-panel" id="result-hardy" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== SECTION 03: Ne ===================== -->
+    <section class="calc-section" id="ne">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">03</span>
+        <h2 class="section-title">Tamanho Efetivo <em>N</em><sub>e</sub></h2>
+        <p class="section-desc">Tamanho efetivo da população considerando a proporção de machos e fêmeas reprodutores.</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="form-group">
+          <label class="toggle-label">
+            <input type="checkbox" id="use-simple-ne" onchange="toggleNeMethod()">
+            <span class="toggle-track"></span>
+            <span>Usar método simples (N<sub>e</sub> = N)</span>
+          </label>
+        </div>
+
+        <div id="ne-sex-inputs">
+          <div class="formula-display mb">N<sub>e</sub> = 4 · N<sub>m</sub> · N<sub>f</sub> / (N<sub>m</sub> + N<sub>f</sub>)</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="nm">N<sub>m</sub> — machos reprodutores</label>
+              <input type="number" id="nm" class="form-input" placeholder="0" min="0" step="any">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="nf">N<sub>f</sub> — fêmeas reprodutoras</label>
+              <input type="number" id="nf" class="form-input" placeholder="0" min="0" step="any">
+            </div>
+          </div>
+        </div>
+
+        <div id="ne-simple-input" hidden>
+          <div class="form-group" style="max-width: 280px;">
+            <label class="form-label" for="ne-n">N — tamanho da população</label>
+            <input type="number" id="ne-n" class="form-input" placeholder="0" min="0" step="any">
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-calc" onclick="runNe()">Calcular N<sub>e</sub></button>
+          <button class="btn-clear" onclick="clearResult('ne')">Limpar</button>
+        </div>
+        <div class="result-panel" id="result-ne" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== SECTION 04: HETEROZIGOSIDADE ===================== -->
+    <section class="calc-section" id="hetero">
+      <div class="section-header">
+        <span class="section-num" aria-hidden="true">04</span>
+        <h2 class="section-title">Heterozigosidade</h2>
+        <p class="section-desc">Heterozigosidade esperada (H<sub>e</sub>) e comparação com a observada (H<sub>o</sub>).</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="formula-display mb">H<sub>e</sub> = 1 − (p² + q²) = 2pq</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="het-p">Frequência alélica (<em>p</em>)</label>
+            <input type="number" id="het-p" class="form-input" value="0.5" step="0.01" min="0" max="1">
+            <span class="form-hint">Intervalo: [0, 1]</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="het-ho">H<sub>o</sub> observado <span class="optional">(opcional)</span></label>
+            <input type="number" id="het-ho" class="form-input" placeholder="deixe em branco se não disponível" step="any" min="0" max="1">
+            <span class="form-hint">compara com H<sub>e</sub> e calcula F<sub>IS</sub></span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-calc" onclick="runHetero()">Calcular</button>
+          <button class="btn-clear" onclick="clearResult('hetero')">Limpar</button>
+        </div>
+        <div class="result-panel" id="result-hetero" hidden></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Calculadora educativa — cada etapa detalhada.</p>
+      <p class="footer-note">Para uso didático. Verifique os resultados com literatura especializada.</p>
+    </div>
+  </footer>
+
+  <script>
+  // ============================================================
+  // CONSTANTS
+  // ============================================================
+  const RELATIONSHIPS = {
+    parent_child:  { label: 'Pai-Filho',          phi: 0.25   },
+    full_siblings: { label: 'Irmãos completos',   phi: 0.25   },
+    half_siblings: { label: 'Meio-irmãos',        phi: 0.125  },
+    first_cousins: { label: 'Primos de 1º grau',  phi: 0.0625 },
+    unrelated:     { label: 'Não aparentados',    phi: 0.0    },
+    custom:        { label: 'Personalizado',       phi: null   },
+  };
+
+  // ============================================================
+  // UTILITIES
+  // ============================================================
+  function fmt(n, decimals) {
+    if (typeof n !== 'number' || isNaN(n)) return '—';
+    const d = decimals !== undefined ? decimals : 6;
+    return parseFloat(n.toFixed(d)).toString();
+  }
+
+  function pct(n) {
+    return (n * 100).toFixed(2) + '%';
+  }
+
+  function buildResultHTML(values, steps) {
+    const valHTML = values.map(([label, val, note]) => `
+      <div class="result-value">
+        <span class="rv-label">${label}</span>
+        <span class="rv-number">${val}</span>
+        ${note ? `<span class="rv-note">${note}</span>` : ''}
+      </div>`).join('');
+
+    const stepsHTML = steps.map((s, i) =>
+      `<li class="step-item" style="animation-delay:${i * 0.065}s">${s}</li>`
+    ).join('');
+
+    return `
+      <div class="result-divider"></div>
+      <div class="result-values">${valHTML}</div>
+      <div class="result-steps">
+        <span class="steps-heading">Etapas do cálculo</span>
+        <ol class="steps-list">${stepsHTML}</ol>
+      </div>`;
+  }
+
+  function showResult(id, html) {
+    const panel = document.getElementById('result-' + id);
+    panel.innerHTML = html;
+    panel.hidden = false;
+    panel.offsetHeight; // force reflow for animation
+  }
+
+  function clearResult(id) {
+    const panel = document.getElementById('result-' + id);
+    panel.hidden = true;
+    panel.innerHTML = '';
+  }
+
+  // ============================================================
+  // TOGGLE UI STATES
+  // ============================================================
+  function toggleWright() {
+    const checked = document.getElementById('use-wright').checked;
+    document.getElementById('wright-inputs').hidden = !checked;
+  }
+
+  function toggleNeMethod() {
+    const simple = document.getElementById('use-simple-ne').checked;
+    document.getElementById('ne-sex-inputs').hidden = simple;
+    document.getElementById('ne-simple-input').hidden = !simple;
+  }
+
+  function previewHW() {
+    const p = parseFloat(document.getElementById('hw-p').value);
+    const el = document.getElementById('hw-q-preview');
+    el.textContent = isNaN(p) ? '?' : fmt(1 - p, 4);
+  }
+
+  function onRelChange() {
+    const rel = document.getElementById('rel-select').value;
+    const hint = document.getElementById('rel-hint');
+    const customFields = document.getElementById('custom-fields');
+    const rel_data = RELATIONSHIPS[rel];
+
+    if (rel === 'custom') {
+      hint.textContent = 'Insira valores personalizados abaixo';
+      customFields.style.display = 'grid';
+    } else {
+      const phi = rel_data?.phi ?? 0;
+      hint.textContent = `φ padrão: ${phi} · R padrão: ${phi * 2}`;
+      customFields.style.display = 'none';
+    }
+  }
+
+  function toggleMenu() {
+    document.getElementById('headerNav').classList.toggle('open');
+    document.getElementById('menuToggle').classList.toggle('open');
+  }
+
+  function closeMenu() {
+    document.getElementById('headerNav').classList.remove('open');
+    document.getElementById('menuToggle').classList.remove('open');
+  }
+
+  // ============================================================
+  // CALCULATOR: ENDOGAMIA E PARENTESCO
+  // ============================================================
+  function runEndogamia() {
+    const rel        = document.getElementById('rel-select').value;
+    const customPhi  = document.getElementById('custom-phi').value.trim();
+    const customR    = document.getElementById('custom-R').value.trim();
+    const useWright  = document.getElementById('use-wright').checked;
+    const steps = [];
+    let phi, R;
+
+    if (useWright) {
+      const g1    = parseInt(document.getElementById('wright-g1').value)  || 1;
+      const g2    = parseInt(document.getElementById('wright-g2').value)  || 1;
+      const k     = parseInt(document.getElementById('wright-k').value)   || 1;
+      const F_anc = parseFloat(document.getElementById('wright-fanc').value) || 0;
+
+      R   = k * Math.pow(0.5, g1 + g2) * (1 + F_anc);
+      phi = R / 2;
+
+      steps.push(`Método de Wright: k = ${k}, g₁ = ${g1}, g₂ = ${g2}, F<sub>anc</sub> = ${F_anc}`);
+      steps.push(`R = k × (½)<sup>(g₁+g₂)</sup> × (1+F<sub>anc</sub>) = ${k} × (½)<sup>${g1+g2}</sup> × ${1+F_anc} = <strong>${fmt(R)}</strong>`);
+      steps.push(`φ = R / 2 = <strong>${fmt(phi)}</strong>`);
+    } else {
+      if (rel !== 'custom') {
+        phi = RELATIONSHIPS[rel]?.phi ?? 0;
+      } else {
+        const v = parseFloat(customPhi);
+        phi = (!isNaN(v) && v >= 0) ? v : 0;
+      }
+
+      if (phi === 0 && customR) {
+        const rVal = parseFloat(customR);
+        R   = (!isNaN(rVal) ? rVal : 0);
+        phi = R / 2;
+      } else {
+        R = 2 * phi;
+      }
+
+      const relLabel = RELATIONSHIPS[rel]?.label || rel;
+      steps.push(`Relação selecionada: <strong>${relLabel}</strong>`);
+
+      if (rel === 'custom' && customPhi) {
+        steps.push(`Valor customizado para φ: <strong>${fmt(phi)}</strong>`);
+      } else if (customR && phi === parseFloat(customR) / 2) {
+        steps.push(`Valor customizado para R: <strong>${fmt(R)}</strong> → φ = R/2`);
+      } else {
+        steps.push(`Valor padrão da relação: φ = ${fmt(phi)}, R = ${fmt(R)}`);
+      }
+
+      steps.push(`Coeficiente de endogamia <strong>F = φ = ${fmt(phi)}</strong>`);
+      steps.push(`Coeficiente de parentesco <strong>R = 2 × φ = ${fmt(R)}</strong>`);
+    }
+
+    const values = [
+      ['φ',      fmt(phi), 'coeficiente de parentesco (kinship)'],
+      ['F',      fmt(phi), 'coeficiente de endogamia'],
+      ['R',      fmt(R),   'coeficiente de relação (R = 2φ)'],
+    ];
+
+    showResult('endogamia', buildResultHTML(values, steps));
+    document.getElementById('result-endogamia').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ============================================================
+  // CALCULATOR: HARDY-WEINBERG
+  // ============================================================
+  function runHardy() {
+    let p = parseFloat(document.getElementById('hw-p').value);
+    if (isNaN(p)) p = 0.5;
+    p = Math.max(0, Math.min(1, p));
+
+    const q   = 1 - p;
+    const p2  = p * p;
+    const q2  = q * q;
+    const pq2 = 2 * p * q;
+
+    const steps = [
+      `Frequências alélicas: p = <strong>${fmt(p, 4)}</strong>, q = 1 − p = <strong>${fmt(q, 4)}</strong>`,
+      `Genótipo <strong>AA</strong>: p² = ${fmt(p, 4)}² = <strong>${fmt(p2)}</strong> (${pct(p2)})`,
+      `Genótipo <strong>Aa</strong>: 2pq = 2 × ${fmt(p, 4)} × ${fmt(q, 4)} = <strong>${fmt(pq2)}</strong> (${pct(pq2)})`,
+      `Genótipo <strong>aa</strong>: q² = ${fmt(q, 4)}² = <strong>${fmt(q2)}</strong> (${pct(q2)})`,
+      `Verificação: p² + 2pq + q² = ${fmt(p2 + pq2 + q2, 4)} ≈ 1 ✓`,
+    ];
+
+    const barHTML = `
+      <div class="hw-bar-wrap">
+        <div class="hw-bar">
+          <div class="hw-seg seg-AA" style="width:${pct(p2)}" title="AA: ${fmt(p2, 4)}"><span>AA</span></div>
+          <div class="hw-seg seg-Aa" style="width:${pct(pq2)}" title="Aa: ${fmt(pq2, 4)}"><span>Aa</span></div>
+          <div class="hw-seg seg-aa" style="width:${pct(q2)}" title="aa: ${fmt(q2, 4)}"><span>aa</span></div>
+        </div>
+        <div class="hw-legend">
+          <span><span class="hw-dot seg-AA"></span> AA = ${fmt(p2, 4)}</span>
+          <span><span class="hw-dot seg-Aa"></span> Aa = ${fmt(pq2, 4)}</span>
+          <span><span class="hw-dot seg-aa"></span> aa = ${fmt(q2, 4)}</span>
+        </div>
+      </div>`;
+
+    const values = [
+      ['p',   fmt(p, 4),   'freq. alelo A'],
+      ['q',   fmt(q, 4),   'freq. alelo a'],
+      ['p²',  fmt(p2, 4),  'genótipo AA'],
+      ['2pq', fmt(pq2, 4), 'genótipo Aa'],
+      ['q²',  fmt(q2, 4),  'genótipo aa'],
+    ];
+
+    const valHTML = values.map(([l, v, n]) => `
+      <div class="result-value">
+        <span class="rv-label">${l}</span>
+        <span class="rv-number">${v}</span>
+        <span class="rv-note">${n}</span>
+      </div>`).join('');
+
+    const stepsHTML = steps.map((s, i) =>
+      `<li class="step-item" style="animation-delay:${i * 0.065}s">${s}</li>`
+    ).join('');
+
+    const html = `
+      <div class="result-divider"></div>
+      ${barHTML}
+      <div class="result-values">${valHTML}</div>
+      <div class="result-steps">
+        <span class="steps-heading">Etapas do cálculo</span>
+        <ol class="steps-list">${stepsHTML}</ol>
+      </div>`;
+
+    showResult('hardy', html);
+    document.getElementById('result-hardy').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ============================================================
+  // CALCULATOR: TAMANHO EFETIVO Ne
+  // ============================================================
+  function runNe() {
+    const simple = document.getElementById('use-simple-ne').checked;
+    const steps  = [];
+    let Ne;
+
+    if (!simple) {
+      const Nm = parseFloat(document.getElementById('nm').value) || 0;
+      const Nf = parseFloat(document.getElementById('nf').value) || 0;
+
+      if (Nm + Nf === 0) {
+        Ne = 0;
+        steps.push('Nm e Nf são zero — Ne = 0');
+      } else {
+        Ne = (4 * Nm * Nf) / (Nm + Nf);
+        steps.push(`Método sex-unequal: N<sub>m</sub> = ${fmt(Nm)}, N<sub>f</sub> = ${fmt(Nf)}`);
+        steps.push(`N<sub>e</sub> = 4 × ${fmt(Nm)} × ${fmt(Nf)} / (${fmt(Nm)} + ${fmt(Nf)}) = <strong>${fmt(Ne, 4)}</strong>`);
+        steps.push(`Total censal N = N<sub>m</sub> + N<sub>f</sub> = ${fmt(Nm + Nf)}`);
+        steps.push(`Razão N<sub>e</sub>/N = <strong>${fmt(Ne / (Nm + Nf), 4)}</strong>`);
+      }
+    } else {
+      const N = parseFloat(document.getElementById('ne-n').value) || 0;
+      Ne = N;
+      steps.push(`Método simples: N = ${fmt(N)}`);
+      steps.push(`N<sub>e</sub> = N = <strong>${fmt(Ne)}</strong>`);
+    }
+
+    const values = [['Ne', fmt(Ne, 4), 'tamanho efetivo da população']];
+    showResult('ne', buildResultHTML(values, steps));
+    document.getElementById('result-ne').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ============================================================
+  // CALCULATOR: HETEROZIGOSIDADE
+  // ============================================================
+  function runHetero() {
+    let p = parseFloat(document.getElementById('het-p').value);
+    if (isNaN(p)) p = 0.5;
+    p = Math.max(0, Math.min(1, p));
+
+    const q    = 1 - p;
+    const He   = 1 - (p * p + q * q);
+    const HoRaw = document.getElementById('het-ho').value.trim();
+    const Ho   = HoRaw !== '' ? parseFloat(HoRaw) : null;
+
+    const steps = [
+      `p = ${fmt(p, 4)}, q = 1 − p = ${fmt(q, 4)}`,
+      `H<sub>e</sub> = 1 − (p² + q²) = 1 − (${fmt(p*p, 4)} + ${fmt(q*q, 4)}) = <strong>${fmt(He)}</strong>`,
+    ];
+
+    const values = [['He', fmt(He), 'heterozigosidade esperada']];
+
+    if (Ho !== null && !isNaN(Ho)) {
+      const diff = Ho - He;
+      const Fis  = He > 0 ? (1 - Ho / He) : 0;
+      steps.push(`H<sub>o</sub> observado = ${fmt(Ho)}`);
+      steps.push(`Diferença H<sub>o</sub> − H<sub>e</sub> = ${fmt(diff, 4)}`);
+      steps.push(`F<sub>IS</sub> = 1 − H<sub>o</sub>/H<sub>e</sub> = <strong>${fmt(Fis, 4)}</strong> (índice de fixação intra-pop.)`);
+      values.push(['Ho',  fmt(Ho),  'heterozigosidade observada']);
+      values.push(['FIS', fmt(Fis, 4), 'índice de fixação']);
+    }
+
+    showResult('hetero', buildResultHTML(values, steps));
+    document.getElementById('result-hetero').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    onRelChange();
+    previewHW();
+  });
+  </script>
+
+</body>
+</html>
